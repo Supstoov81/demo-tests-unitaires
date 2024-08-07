@@ -1,4 +1,7 @@
 package fr.diginamic.enumerations;
+
+import java.text.Normalizer;
+
 /**
  * Représente une saison et fournit les 4 instances de saisons.
  * 
@@ -33,16 +36,17 @@ public enum Saison {
 	 * @return {@link Saison}
 	 */
 	public static Saison valueOfLibelle(String libelle) {
-		Saison[] saisons = Saison.values();
-		for (Saison saison : saisons) {
-			if (libelle.equals(saison.getLibelle())) {
+		if (libelle == null || libelle.trim().isEmpty()) {
+			throw new IllegalArgumentException("Libelle cannot be null or empty");
+		}
+		String normalizedLibelle = Normalizer.normalize(libelle, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toLowerCase();
+		for (Saison saison : values()) {
+			String normalizedSaisonLibelle = Normalizer.normalize(saison.getLibelle(), Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toLowerCase();
+			if (normalizedLibelle.equals(normalizedSaisonLibelle)) {
 				return saison;
 			}
-			else {
-				return null;
-			}
 		}
-		return null;
+		throw new IllegalArgumentException("No enum constant with libelle " + libelle);
 	}
 
 	@Override
