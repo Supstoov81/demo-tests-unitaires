@@ -1,47 +1,56 @@
 package fr.diginamic.utils;
 
-/**
- * Classe qui fournit des services de traitements de chaines de caractères
- * 
- * @author DIGINAMIC
- */
 public final class StringUtils {
 
 	/**
-	 * Retourne la distance de Levenshtein entre 2 chaines de caractères
-	 * 
-	 * @param lhs chaine 1
-	 * @param rhs chaine 2
-	 * @return distance
+	 * Retourne la distance de Levenshtein entre 2 chaines de caractères.
+	 * Cette distance est le nombre minimal de modifications nécessaires pour transformer une chaîne en une autre.
+	 * Les modifications possibles sont l'insertion, la suppression ou la substitution d'un caractère.
+	 *
+	 * @param lhs chaîne de caractères 1 (ne doit pas être null)
+	 * @param rhs chaîne de caractères 2 (ne doit pas être null)
+	 * @return la distance de Levenshtein entre lhs et rhs
+	 * @throws IllegalArgumentException si l'une des chaînes est null
 	 */
 	public static int levenshteinDistance(CharSequence lhs, CharSequence rhs) {
+		if (lhs == null || rhs == null) {
+			throw new IllegalArgumentException("Les chaînes de caractères ne doivent pas être nulles");
+		}
+
 		int len0 = lhs.length() + 1;
 		int len1 = rhs.length() + 1;
 
-		int[] cost = new int[len0];
-		int[] newcost = new int[len0];
+		// Initialisation des tableaux de coûts
+		int[] previousCost = new int[len0];
+		int[] currentCost = new int[len0];
 
+		// Initialisation du tableau de base (distance de l'empty string à l'autre)
 		for (int i = 0; i < len0; i++) {
-			cost[i] = i;
+			previousCost[i] = i;
 		}
 
+		// Calcul des distances
 		for (int j = 1; j < len1; j++) {
-			newcost[0] = j;
+			char rhsChar = rhs.charAt(j - 1);
+			currentCost[0] = j;
 
 			for (int i = 1; i < len0; i++) {
-				int match = (lhs.charAt(i - 1) == rhs.charAt(j - 1)) ? 0 : 1;
+				char lhsChar = lhs.charAt(i - 1);
 
-				int costReplace = cost[i - 1] + match;
-				int costInsert = cost[i] + 1;
-				int costDelete = newcost[i - 1] + 1;
+				int costReplace = previousCost[i - 1] + (lhsChar == rhsChar ? 0 : 1);
+				int costInsert = previousCost[i] + 1;
+				int costDelete = currentCost[i - 1] + 1;
 
-				newcost[i] = Math.min(Math.min(costInsert, costDelete), costReplace);
+				currentCost[i] = Math.min(Math.min(costInsert, costDelete), costReplace);
 			}
 
-			int[] swap = cost;
-			cost = newcost;
-			newcost = swap;
+			// Échange des tableaux de coûts
+			int[] swap = previousCost;
+			previousCost = currentCost;
+			currentCost = swap;
 		}
-		return cost[len0 - 1];
+
+		// Le dernier élément du tableau précédent contient la distance de Levenshtein
+		return previousCost[len0 - 1];
 	}
 }
